@@ -1,0 +1,26 @@
+name: Publish verified Turnos portal envelope
+on:
+  push:
+    branches: [release/portal-envelope-v020]
+    paths: ['.portal-release/**', 'release-tools/publish_portal.py', '.github/workflows/publish-portal-envelope.yml']
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
+      - name: Validate actual APK and add signed envelope without replacing existing assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 release-tools/publish_portal.py

@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "product": "2cam-apk",
+  "platform": "turnos-control",
+  "package": "services.twocam.turnos",
+  "version_name": "0.2.0-local-test",
+  "version_code": 200,
+  "min_sdk": 22,
+  "channel": "debug",
+  "certificate_sha256": "431172fe64dbeb2536f3f08fba96650c5ca6db3fe4cd1f098b216af30638f69c",
+  "size": 55515,
+  "sha256": "6b3c90eaa0591c02d6e20fed0ba44fbd6125807ba57133e308a4fbc6ad318d49",
+  "source_commit": "76176d5b40f137b35aa6388980cc7ac777d06d4b",
+  "source_workflow_run": 38973490928,
+  "notes": "Turnos 0.2.0 local de pruebas. Mismo APK para autoridad local Fire/Android TV y control en teléfono/tablet Android API22+. Sin PC ni Internet para operar. CI probado en API22 y29; falta validación física. APK dedicada independiente: aún no integra publicidad ni eventos con Digital Signage. Firma DEBUG original conservada; no es una clave comercial permanente. Solo Pruebas; no activar actualizaciones estables con este certificado. No borrar datos ni desinstalar para actualizar."
+}
