@@ -4,6 +4,8 @@
 
 [Descargas de APK en Releases](https://github.com/scammarano/2cam-turnos/releases) · [Instrucciones, funciones verificadas y límites](docs/APK_LOCAL.md)
 
+Para que el portal importe esta versión desde GitHub, la release también contiene el [sobre RSA de APK](https://github.com/scammarano/2cam-turnos/releases/download/v0.2.0-local-test/2CAM_APK_turnos-control_v0.2.0-local-test_RSA.zip). Ver [publicación y datos del origen en el portal 0.4.25](docs/PORTAL_PUBLICATION.md). Es distinto del ZIP de actualización de la web.
+
 Sala local FIFO con cuatro ventanillas; emisión, llamado, repetición, inicio y cierre; hasta tres controles; emparejamiento con código y permisos; persistencia y reintentos idempotentes. El núcleo de Turnos está en `native-core/`, separado de cualquier reproductor Signage.
 
 La release del APK se publica automáticamente **solo tras compilar, verificar firma y pasar pruebas del núcleo y Android API22/API29**. Es una versión de pruebas con firma debug, no la firma comercial permanente. En pantalla dedicada; integración visual con Digital Signage y multiempresa web aún pendientes. No se presenta como producto completo ni como APK iOS.
