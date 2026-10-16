@@ -4,6 +4,7 @@ import services.twocam.turnoscore.LocalQueue;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.io.BufferedInputStream;
 import java.util.HashMap;
 import java.util.Locale;
@@ -16,7 +17,10 @@ final class LanServer {
     private ServerSocket server;private volatile boolean running;
     LanServer(LocalQueue q){queue=q;}
     void start(InetAddress address,int port)throws Exception {
-        server=new ServerSocket(port,8,address);server.setSoTimeout(1000);running=true;
+        ServerSocket listener=new ServerSocket();
+        try{listener.setReuseAddress(true);listener.bind(new InetSocketAddress(address,port),8);listener.setSoTimeout(1000);server=listener;}
+        catch(Exception error){try{listener.close();}catch(Exception ignored){}throw error;}
+        running=true;
         new Thread(()->{while(running){try{Socket c=server.accept();try{workers.execute(()->handle(c));}catch(Exception e){c.close();}}catch(java.net.SocketTimeoutException ignored){}catch(Exception e){if(!running)break;}}},"turnos-lan").start();
     }
     void close(){running=false;try{if(server!=null)server.close();}catch(Exception ignored){}workers.shutdownNow();}
