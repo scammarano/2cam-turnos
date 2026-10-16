@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>2Cam Turnos · Demo T0</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header><a class="brand" href="index.html">2Cam <span>Turnos</span></a><span class="badge">v0.1.0 · T0</span></header>
+<main>
+  <div class="intro"><p class="eyebrow">EMPRESA DEMO / SEDE CENTRO / SALA A</p><h1>Una atención más ordenada.</h1><p>Recepción, operador y dos pantallas simuladas, en una sola vista.</p></div>
+  <aside class="warning">DEMOSTRACIÓN · Datos ficticios en memoria. No conecta con televisores ni guarda cambios al recargar. Sin autenticación: no usar en producción.</aside>
+  <section class="stats" aria-label="Estado de la sala"><div><span>En espera</span><strong id="waiting">0</strong></div><div><span>Atendidos</span><strong id="finished">0</strong></div><div><span>Última secuencia</span><strong id="sequence">0</strong></div></section>
+  <section class="work-grid">
+    <article class="card"><p class="eyebrow">RECEPCIÓN</p><h2>Emitir ticket</h2><p>Servicio de ejemplo: Atención general.</p><button id="issue" class="primary">+ Emitir nuevo ticket</button><p id="issued" class="ticket-receipt">El primer ticket será A-001</p></article>
+    <article class="card"><p class="eyebrow">PUESTO DE ATENCIÓN</p><h2>Consola del operador</h2><label for="counter">Puesto para el siguiente llamado</label><select id="counter"><option value="1">Ventanilla 1</option><option value="2">Ventanilla 2</option></select><p id="operator-state">Sin llamado activo</p><div class="buttons"><button id="call" class="primary">Llamar siguiente</button><button id="repeat">Repetir</button><button id="start">Iniciar atención</button><button id="finish">Finalizar</button></div></article>
+  </section>
+  <p id="feedback" role="status" aria-live="polite">Listo para emitir el primer ticket.</p>
+  <section class="card queue-card"><div class="section-heading"><h2>Cola de atención</h2><span class="muted">Lista de operación · no se envía a la señal pública</span></div><div class="table-scroll"><table><thead><tr><th>Ticket</th><th>Estado</th><th>Puesto</th></tr></thead><tbody id="queue-body"></tbody></table></div></section>
+  <section class="section-heading"><div><p class="eyebrow">SALIDA PÚBLICA</p><h2>Dos pantallas, la misma sala</h2></div><button id="network" aria-pressed="false">Desconectar pantalla B</button></section>
+  <div class="screens">
+    <article class="screen" aria-label="Pantalla A"><div class="screen-top"><span>PANTALLA A · PRINCIPAL</span><span id="status-a">En línea · simulado</span></div><div class="screen-content"><div><p class="screen-caption">TURNO ACTUAL</p><strong id="ticket-a">—</strong><p id="counter-a">Espere su llamado</p></div><div class="advert"><span>ESPACIO DIGITAL SIGNAGE</span><h3>Tu mensaje,<br>en el lugar correcto.</h3><p>Zona publicitaria ficticia</p></div></div><footer id="sync-a">Secuencia 0</footer></article>
+    <article class="screen" aria-label="Pantalla B"><div class="screen-top"><span>PANTALLA B · SECUNDARIA</span><span id="status-b">En línea · simulado</span></div><div class="screen-content"><div><p class="screen-caption">TURNO ACTUAL</p><strong id="ticket-b">—</strong><p id="counter-b">Espere su llamado</p></div><div class="advert secondary"><span>ESPACIO DIGITAL SIGNAGE</span><h3>Información<br>que acompaña.</h3><p>Sin audio en pantalla secundaria</p></div></div><footer id="sync-b">Secuencia 0</footer></article>
+  </div>
+  <section class="card"><div class="section-heading"><h2>Diagnóstico de eventos</h2><div class="buttons"><button id="export">Exportar JSONL ficticio</button><button id="reset">Reiniciar demo</button></div></div><p class="muted">Los IDs demo no son UUID de producción. No se mide latencia real de red ni de Fire TV.</p><pre id="events" aria-label="Último evento">Sin eventos</pre></section>
+  <footer class="page-footer">2Cam Turnos es la autoridad de las colas. Digital Signage es la autoridad de dispositivos, zonas y publicidad.<br>Esta demo no sustituye las pruebas multiempresa, concurrencia y hardware.</footer>
+</main><script src="engine.js"></script><script src="app.js"></script>
+</body></html>

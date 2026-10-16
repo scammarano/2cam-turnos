@@ -1,0 +1,77 @@
+name: Verify and publish T0
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: turnos_test
+          MYSQL_ROOT_PASSWORD: disposable_ci_password
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pdisposable_ci_password"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+      - name: Simulator tests
+        run: node --test tests/*.test.cjs
+      - name: PHP lint and explicit prototype health
+        run: |
+          find public -name '*.php' -print0 | xargs -0 -n1 php -l
+          php public/api/v1/health/index.php | php -r '$v=json_decode(stream_get_contents(STDIN),true,512,JSON_THROW_ON_ERROR); if ($v["ready"]!==false || $v["status"]!=="prototype") exit(1);'
+      - name: MySQL schema and scoped constraints
+        env:
+          MYSQL_PWD: disposable_ci_password
+        run: |
+          mysql -h 127.0.0.1 -u root turnos_test < database/migrations/001_initial.sql
+          mysql -h 127.0.0.1 -u root turnos_test < tests/schema.sql
+      - name: Contract syntax and local references
+        run: |
+          python3 -m pip install 'PyYAML==6.0.2' 'openapi-spec-validator==0.7.2'
+          python3 scripts/check_contract.py
+      - name: Build distributable
+        run: python3 scripts/package.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 2cam-turnos-v0.1.0-t0
+          path: dist/*
+          if-no-files-found: error
+  publish:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: turnos-t0-publish
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: 2cam-turnos-v0.1.0-t0
+          path: dist
+      - name: Publish immutable prerelease if not present
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.1.0-t0 >/dev/null 2>&1; then
+            echo 'Release already exists; binaries are not overwritten.'
+          else
+            gh release create v0.1.0-t0 dist/* --target "$GITHUB_SHA" --prerelease --title '2Cam Turnos 0.1.0 · Simulador T0' --notes-file docs/release-0.1.0.md
+          fi

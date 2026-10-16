@@ -1,0 +1,234 @@
+openapi: 3.0.3
+info:
+  title: 2Cam Turnos — contrato propuesto, NO implementado en T0 salvo health
+  version: 1.0.0-draft
+  description: Rutas bajo la raíz independiente de Turnos. No son endpoints del portal Signage.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      summary: Estado del proceso (T0 devuelve prototype y ready=false)
+      security: []
+      responses:
+        '200':
+          description: Estado informativo; no implica disponibilidad de BD o gateway
+  /areas/{area_id}/snapshot:
+    parameters:
+      - $ref: '#/components/parameters/areaId'
+    get:
+      summary: Snapshot público consistente de un área autorizada
+      responses:
+        '200':
+          description: Estado público y sequence del mismo punto consistente; sin datos personales
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Snapshot'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /areas/{area_id}/events:
+    parameters:
+      - $ref: '#/components/parameters/areaId'
+    get:
+      summary: Replay ascendente del stream de esta área
+      parameters:
+        - in: query
+          name: after_sequence
+          required: true
+          schema: {type: integer, minimum: 0, maximum: 9007199254740991}
+        - in: query
+          name: limit
+          schema: {type: integer, minimum: 1, maximum: 500, default: 100}
+      responses:
+        '200':
+          description: Página de eventos ordenados
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [events, next_sequence, has_more]
+                properties:
+                  events:
+                    type: array
+                    items: {$ref: '#/components/schemas/Event'}
+                  next_sequence: {type: integer, minimum: 0}
+                  has_more: {type: boolean}
+        '410':
+          description: snapshot_required; cursor anterior a retención
+        '409':
+          description: invalid_cursor; cursor superior al stream actual
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tickets:
+    post:
+      summary: Emitir ticket (emisor autenticado)
+      parameters:
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [queue_id]
+              properties:
+                queue_id: {type: integer, minimum: 1}
+      responses:
+        '201': {description: Ticket emitido; respuesta privada al emisor}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /areas/{area_id}/call-next:
+    parameters:
+      - $ref: '#/components/parameters/areaId'
+    post:
+      summary: Asignar siguiente ticket elegible atómicamente (no lo decide la pantalla)
+      parameters:
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [counter_id, queue_id]
+              properties:
+                counter_id: {type: integer, minimum: 1}
+                queue_id: {type: integer, minimum: 1}
+      responses:
+        '200': {description: Llamado confirmado después del commit; incluye call_id y sequence}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {description: queue_empty o puesto no disponible}
+  /calls/{call_id}/repeat:
+    parameters:
+      - $ref: '#/components/parameters/callId'
+    post:
+      summary: Nueva orden de anuncio del mismo llamado
+      parameters:
+        - $ref: '#/components/parameters/idempotencyKey'
+      responses:
+        '200': {description: Repetición confirmada; misma clave no crea otra repetición}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /calls/{call_id}/start-service:
+    parameters:
+      - $ref: '#/components/parameters/callId'
+    post:
+      summary: Iniciar atención de un llamado asignado al puesto autorizado
+      parameters:
+        - $ref: '#/components/parameters/idempotencyKey'
+      responses:
+        '200': {description: Inicio confirmado}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /calls/{call_id}/finish:
+    parameters:
+      - $ref: '#/components/parameters/callId'
+    post:
+      summary: Finalizar atención iniciada
+      parameters:
+        - $ref: '#/components/parameters/idempotencyKey'
+      responses:
+        '200': {description: Cierre confirmado}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /tickets/{ticket_id}/transfer:
+    parameters:
+      - in: path
+        name: ticket_id
+        required: true
+        schema: {type: integer, minimum: 1}
+    post:
+      summary: Transferencia con trazabilidad entre ámbitos autorizados de la misma empresa
+      parameters:
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [target_queue_id, reason]
+              properties:
+                target_queue_id: {type: integer, minimum: 1}
+                reason: {type: string, minLength: 3, maxLength: 300}
+      responses:
+        '200': {description: Transferencia confirmada; detalle privado}
+        '409': {$ref: '#/components/responses/Conflict'}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer}
+  parameters:
+    areaId:
+      in: path
+      name: area_id
+      required: true
+      schema: {type: integer, minimum: 1}
+    callId:
+      in: path
+      name: call_id
+      required: true
+      schema: {type: integer, minimum: 1}
+    idempotencyKey:
+      in: header
+      name: Idempotency-Key
+      required: true
+      schema: {type: string, minLength: 1, maxLength: 128}
+  responses:
+    NotFound: {description: Recurso inexistente o fuera del ámbito del principal}
+    Conflict: {description: Conflicto de estado o clave idempotente reutilizada con otro request}
+  schemas:
+    Scope:
+      type: object
+      additionalProperties: false
+      required: [site_id, area_id]
+      properties:
+        site_id: {type: integer, minimum: 1}
+        area_id: {type: integer, minimum: 1}
+    PublicCall:
+      type: object
+      required: [ticket_id, ticket_label, counter_id, counter_label, state]
+      properties:
+        ticket_id: {type: integer, minimum: 1}
+        ticket_label: {type: string, maxLength: 24}
+        counter_id: {type: integer, minimum: 1}
+        counter_label: {type: string, maxLength: 80}
+        call_id: {type: integer, minimum: 1}
+        state: {type: string, enum: [called, serving, finished, absent, cancelled, transferred]}
+        call_sequence: {type: integer, minimum: 1}
+        sound: {type: boolean}
+    Event:
+      type: object
+      additionalProperties: false
+      required: [schema, event_id, sequence, occurred_at, source, type, tenant_ref, scope, payload]
+      properties:
+        schema: {type: string, enum: [2cam.events.v1]}
+        event_id: {type: string, format: uuid}
+        sequence: {type: integer, minimum: 1, maximum: 9007199254740991}
+        occurred_at: {type: string, format: date-time}
+        source: {type: string, enum: [turnos]}
+        type: {type: string, enum: [turnos.ticket_issued, turnos.ticket_called, turnos.call_repeated, turnos.service_started, turnos.service_finished, turnos.ticket_transferred, turnos.ticket_cancelled]}
+        tenant_ref: {type: string, pattern: '^turnos:company:[1-9][0-9]*$'}
+        scope: {$ref: '#/components/schemas/Scope'}
+        payload:
+          type: object
+          description: Payload por tipo. Ver contracts.md; completar esquemas tipados antes de T1. El simulador no es implementación de este contrato.
+    Snapshot:
+      type: object
+      additionalProperties: false
+      required: [schema, tenant_ref, scope, sequence, generated_at, active_calls, recent_calls]
+      properties:
+        schema: {type: string, enum: [2cam.snapshot.v1]}
+        tenant_ref: {type: string}
+        scope: {$ref: '#/components/schemas/Scope'}
+        sequence: {type: integer, minimum: 0, maximum: 9007199254740991}
+        generated_at: {type: string, format: date-time}
+        active_calls:
+          type: array
+          description: Un llamado activo por puesto; múltiples puestos en una misma área
+          items: {$ref: '#/components/schemas/PublicCall'}
+        recent_calls:
+          type: array
+          maxItems: 20
+          items: {$ref: '#/components/schemas/PublicCall'}
