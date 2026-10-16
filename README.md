@@ -6,7 +6,7 @@ Primera publicación del proyecto independiente de gestión de turnos. **Prototi
 
 Descarga `2cam-turnos-v0.1.0-t0.zip` desde [Releases](https://github.com/scammarano/2cam-turnos/releases), descomprímelo y abre **`public/demo/index.html`**. Funciona sin servidor, Node ni conexión a Internet. Los datos son ficticios, permanecen solamente en memoria y se borran al recargar. No introduzcas datos personales.
 
-La demo permite emitir tickets, llamar, repetir, iniciar y finalizar atención; muestra dos pantallas de sala con publicidad ficticia y permite desconectar la segunda para probar su recuperación. **Ambas pantallas son simuladas dentro del mismo navegador**, no televisores conectados. No hay login, enlace LAN, Bluetooth, impresora, base de datos ni audio garantizado.
+La demo permite emitir tickets, llamar, repetir, iniciar y finalizar atención; muestra dos pantallas de sala con publicidad ficticia y permite desconectar la segunda para probar su recuperación. **Ambas pantallas son simuladas dentro del mismo navegador**, no televisores conectados. No hay login, enlace LAN, Bluetooth, impresora, base de datos ni audio implementado.
 
 ## Contenido verificable
 

@@ -58,7 +58,7 @@
       const mode = displays.b.reconnect(queue);
       el('network').textContent = 'Desconectar pantalla B';
       el('network').setAttribute('aria-pressed', 'false');
-      el('feedback').textContent = 'Pantalla B recuperada mediante ' + mode + '. No se repiten anuncios de audio al recuperar.';
+      el('feedback').textContent = 'Pantalla B recuperada mediante ' + mode + '. Audio no implementado en T0.';
     }
     render();
   });
