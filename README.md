@@ -1,4 +1,18 @@
-# 2Cam Turnos · v0.1.0-T0
+# 2Cam Turnos · APK local Android
+
+**La entrega principal es el APK nativo `0.2.0-local-test`.** Instala el mismo APK en el Fire y en la tablet Android: Fire en modo Pantalla principal, tablet en modo Control remoto. Opera directamente en la red privada, sin computadora, Node ni conexión a Internet.
+
+[Descargas de APK en Releases](https://github.com/scammarano/2cam-turnos/releases) · [Instrucciones, funciones verificadas y límites](docs/APK_LOCAL.md)
+
+Sala local FIFO con cuatro ventanillas; emisión, llamado, repetición, inicio y cierre; hasta tres controles; emparejamiento con código y permisos; persistencia y reintentos idempotentes. El núcleo de Turnos está en `native-core/`, separado de cualquier reproductor Signage.
+
+La release del APK se publica automáticamente **solo tras compilar, verificar firma y pasar pruebas del núcleo y Android API22/API29**. Es una versión de pruebas con firma debug, no la firma comercial permanente. En pantalla dedicada; integración visual con Digital Signage y multiempresa web aún pendientes. No se presenta como producto completo ni como APK iOS.
+
+## Desarrollo Android
+
+JDK17, Android SDK35, Gradle8.11.1; en `android/`: `gradle :core:test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug`. GitHub instala y ejecuta estas herramientas; el usuario final solo instala el APK. No hay claves privadas en el repositorio.
+
+## Referencia anterior · v0.1.0-T0
 
 Primera publicación del proyecto independiente de gestión de turnos. **Prototipo T0, no apto para producción.** No es un APK y no modifica Digital Signage.
 

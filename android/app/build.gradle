@@ -1,0 +1,17 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'services.twocam.turnos'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'services.twocam.turnos'
+        minSdk 22
+        targetSdk 35
+        versionCode 200
+        versionName '0.2.0-local-test'
+        testInstrumentationRunner 'services.twocam.turnos.TurnosInstrumentation'
+    }
+    buildFeatures { buildConfig true }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+    lint { abortOnError true }
+}
+dependencies { implementation project(':core') }

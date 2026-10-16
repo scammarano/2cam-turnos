@@ -1,0 +1,1 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android"><item><shape><size android:width="320dp" android:height="180dp"/><solid android:color="#102B3B"/></shape></item><item android:drawable="@drawable/ic_turnos" android:left="120dp" android:right="120dp" android:top="50dp" android:bottom="50dp"/></layer-list>

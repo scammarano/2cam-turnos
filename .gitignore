@@ -4,3 +4,10 @@ dist/
 config/local.php
 storage/*
 !storage/.gitkeep
+.gradle/
+**/build/
+android/local.properties
+*.keystore
+*.jks
+delivery/
+test-apks/
