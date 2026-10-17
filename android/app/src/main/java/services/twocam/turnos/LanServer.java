@@ -14,16 +14,21 @@ import java.util.concurrent.TimeUnit;
 final class LanServer {
     private final LocalQueue queue;
     private final ThreadPoolExecutor workers=new ThreadPoolExecutor(4,4,0,TimeUnit.SECONDS,new ArrayBlockingQueue<Runnable>(16));
-    private ServerSocket server;private volatile boolean running;
+    private ServerSocket server;private Thread acceptThread;private volatile boolean running;
     LanServer(LocalQueue q){queue=q;}
     void start(InetAddress address,int port)throws Exception {
         ServerSocket listener=new ServerSocket();
         try{listener.setReuseAddress(true);listener.bind(new InetSocketAddress(address,port),8);listener.setSoTimeout(1000);server=listener;}
         catch(Exception error){try{listener.close();}catch(Exception ignored){}throw error;}
         running=true;
-        new Thread(()->{while(running){try{Socket c=server.accept();try{workers.execute(()->handle(c));}catch(Exception e){c.close();}}catch(java.net.SocketTimeoutException ignored){}catch(Exception e){if(!running)break;}}},"turnos-lan").start();
+        acceptThread=new Thread(()->{while(running){try{Socket c=server.accept();try{workers.execute(()->handle(c));}catch(Exception e){c.close();}}catch(java.net.SocketTimeoutException ignored){}catch(Exception e){if(!running)break;}}},"turnos-lan");acceptThread.start();
     }
-    void close(){running=false;try{if(server!=null)server.close();}catch(Exception ignored){}workers.shutdownNow();}
+    void close(){running=false;try{if(server!=null)server.close();}catch(Exception ignored){}workers.shutdownNow();
+        // Android API22 defers descriptor release while accept() is still unwinding.
+        // Await that thread before a replacement listener binds the same address.
+        Thread accepting=acceptThread;
+        if(accepting!=null&&accepting!=Thread.currentThread())try{accepting.join(1500);}catch(InterruptedException interrupted){Thread.currentThread().interrupt();}
+    }
     private static String line(BufferedInputStream in,int max)throws Exception {
         StringBuilder result=new StringBuilder();int b;
         while((b=in.read())!=-1&&b!=10){if(b!=13)result.append((char)b);if(result.length()>max)throw new Exception("Cabecera demasiado grande");}
